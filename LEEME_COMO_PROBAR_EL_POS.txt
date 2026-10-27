@@ -1,0 +1,42 @@
+================================================================================
+          SISTEMA DE VENTA POS - FARMACIA DAVALSI (VERSION MOSTRADOR)
+================================================================================
+
+Hola! Este paquete contiene el Sistema de Venta POS de Farmacia Davalsi listo
+para probar en cualquier computadora con Windows.
+
+--------------------------------------------------------------------------------
+PASOS PARA INICIAR EL SISTEMA (SOLO 2 PASOS):
+--------------------------------------------------------------------------------
+
+1. DESCOMPRIMIR:
+   Haz clic derecho sobre este archivo ZIP y selecciona "Extraer todo..."
+
+2. ARRANCAR EL SISTEMA:
+   Entra a la carpeta descomprimida y elige UNA de estas dos opciones:
+
+   OPCION A (La mas rapida si tienes Python instalado):
+   👉 Haz doble clic sobre: "INICIAR_FARMACIA_DAVALSI.bat"
+      Se abrira de inmediato tu navegador web con la pantalla de cobro del POS.
+
+   OPCION B (Si NO tienes Python instalado en esta computadora):
+   👉 Haz doble clic sobre: "Instalar_FarmaSys_POS.bat"
+      Instalara el programa portable oficial en tu computadora, creara el acceso
+      directo en el Escritorio con su icono y abrira el sistema de cobro.
+
+--------------------------------------------------------------------------------
+¿QUE PUEDES PROBAR EN EL SISTEMA DE VENTA?
+--------------------------------------------------------------------------------
+- Realizar ventas de medicamentos y articulos de higiene (desodorantes, limas, etc.).
+- Elegir si cobras por Caja, Blister o Unidad con descuento automatico.
+- Cobrar en Efectivo (calcula el cambio en pesos dominicanos RD$).
+- Imprimir facturas termicas de 80mm o reportes completos de inventario.
+- Recibir y despachar pedidos con el boton verde "Pegar WhatsApp".
+- Activar o bloquear en la esquina superior derecha las opciones de Tarjeta,
+  Envio a Domicilio y Seguro Medico ARS.
+
+Credenciales de Acceso Administrador (si las solicita):
+- Usuario: nicarlis123
+- Clave:   davalsi123
+
+================================================================================
