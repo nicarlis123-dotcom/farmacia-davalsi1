@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FarmaSys | Sistema POS Farmacéutico, Inventario y Multi-Sucursal (RD$)</title>
+  <title>FarmaSys — Sistema POS & Control de Farmacia (RD$)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -24,6 +24,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="manifest" href="/manifest-pos.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="theme-color" content="#0f766e" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body class="min-h-screen flex flex-col bg-slate-100 text-slate-900">
@@ -124,14 +128,16 @@
   <header class="sticky top-0 z-40 bg-slate-900 text-white shadow-lg border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center font-extrabold text-lg shadow">
-          💊
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-700 p-0.5 flex items-center justify-center shadow-lg border border-teal-400/30 flex-shrink-0">
+          <img src="/icon-192.png" alt="FarmaSys Logo" class="w-full h-full rounded-[14px] object-cover" />
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <span class="font-black text-xs sm:text-sm tracking-wider text-teal-400 uppercase bg-teal-950/80 px-2 py-0.5 rounded-md border border-teal-500/30">FarmaSys</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-black text-sm sm:text-base tracking-wider text-emerald-400 uppercase bg-slate-950 px-2.5 py-0.5 rounded-lg border border-emerald-500/40 shadow-xs flex items-center gap-1.5">
+              <span>💊</span> <span>FARMASYS</span>
+            </span>
             <span class="text-slate-600 font-bold">|</span>
-            <span id="sys-header-pharmacy-name" class="font-extrabold text-base sm:text-lg text-white">Farmacia</span>
+            <span id="sys-header-pharmacy-name" class="font-extrabold text-base sm:text-lg text-white">Farmacia Davalsi</span>
             <span id="sys-header-user-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-500/20 text-purple-200 border border-purple-400/40 flex items-center gap-1">
               🛡️ nicarlis123
             </span>
@@ -528,10 +534,25 @@
               <!-- Menú Flotante de Resultados en Tiempo Real -->
               <div id="pos-search-dropdown" class="absolute left-0 right-0 top-full mt-1 bg-white rounded-2xl shadow-2xl border-2 border-teal-500 z-50 hidden max-h-80 overflow-y-auto divide-y divide-slate-100"></div>
             </div>
-            <select id="pos-scan-presentation" class="px-3 py-2.5 rounded-xl border-2 border-slate-300 bg-slate-50 text-xs font-bold">
-              <option value="UNIDAD" selected>Empaque: UNIDAD</option>
-              <option value="BLISTER">Empaque: BLÍSTER</option>
-              <option value="CAJA">Empaque: CAJA</option>
+            <!-- Botones Visuales Grandes de Presentación -->
+            <div class="inline-flex rounded-xl bg-slate-200 p-1 border border-slate-300 gap-1 flex-shrink-0 items-center">
+              <button type="button" onclick="selectVisualScanPresentation('UNIDAD')" id="btn-pres-UNIDAD" class="pres-pill-btn active-pres px-3 py-2 rounded-lg text-xs font-black transition flex items-center gap-1 cursor-pointer">
+                <span>🔹</span> <span>Unidad</span>
+                <span class="badge-pres-active text-[9px] bg-white text-teal-900 px-1 rounded-full font-black">✓</span>
+              </button>
+              <button type="button" onclick="selectVisualScanPresentation('BLISTER')" id="btn-pres-BLISTER" class="pres-pill-btn px-3 py-2 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition flex items-center gap-1 cursor-pointer">
+                <span>💊</span> <span>Blíster</span>
+                <span class="badge-pres-active hidden text-[9px] bg-white text-teal-900 px-1 rounded-full font-black">✓</span>
+              </button>
+              <button type="button" onclick="selectVisualScanPresentation('CAJA')" id="btn-pres-CAJA" class="pres-pill-btn px-3 py-2 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition flex items-center gap-1 cursor-pointer">
+                <span>📦</span> <span>Caja</span>
+                <span class="badge-pres-active hidden text-[9px] bg-white text-teal-900 px-1 rounded-full font-black">✓</span>
+              </button>
+            </div>
+            <select id="pos-scan-presentation" class="hidden">
+              <option value="UNIDAD" selected>UNIDAD</option>
+              <option value="BLISTER">BLISTER</option>
+              <option value="CAJA">CAJA</option>
             </select>
             <button type="submit" class="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow flex-shrink-0">
               + Agregar
@@ -593,25 +614,49 @@
                 </button>
               </div>
 
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <div class="flex items-center justify-between">
-                    <label class="block text-[11px] font-bold text-slate-600 uppercase">Método de Pago</label>
-                    <span id="pos-card-lock-hint" class="hidden text-[9px] font-extrabold text-rose-600">🔒 Tarjeta Bloqueada</span>
-                  </div>
-                  <select id="pos-payment-method" class="w-full mt-1 px-2.5 py-2 rounded-lg border border-slate-300 text-xs font-bold bg-white">
-                    <option value="TARJETA" id="pos-opt-payment-tarjeta">💳 Tarjeta</option>
-                    <option value="DEPOSITO_CUENTA">🏦 Depósito a Cuenta</option>
-                    <option value="EFECTIVO">💵 Efectivo RD$</option>
-                    <option value="CREDITO_FIADO">📒 Crédito / Fiado (Deudor)</option>
-                  </select>
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs font-black text-slate-700 uppercase tracking-wide">💵 Método de Pago (Opción Seleccionada):</label>
+                  <span id="pos-card-lock-hint" class="hidden text-[10px] font-extrabold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">🔒 Tarjeta Bloqueada</span>
                 </div>
-                <div>
+                
+                <!-- 4 Botones Visuales Grandes de Pago con Indicador Seleccionado -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="pos-visual-payment-selector">
+                  <button type="button" onclick="selectVisualPaymentMethod('EFECTIVO')" id="btn-pay-EFECTIVO" class="pay-method-btn active-pay p-2.5 rounded-xl border-2 text-center transition flex flex-col items-center justify-center gap-1 cursor-pointer">
+                    <span class="text-2xl">💵</span>
+                    <span class="text-xs font-black leading-tight">Efectivo RD$</span>
+                    <span class="badge-active-indicator text-[9px] bg-white text-teal-900 font-black px-1.5 py-0.2 rounded-full shadow-xs">✓ SELECCIONADO</span>
+                  </button>
+                  <button type="button" onclick="selectVisualPaymentMethod('TARJETA')" id="btn-pay-TARJETA" class="pay-method-btn p-2.5 rounded-xl border-2 text-center transition flex flex-col items-center justify-center gap-1 cursor-pointer bg-white text-slate-700 border-slate-300 hover:border-teal-400 font-bold">
+                    <span class="text-2xl">💳</span>
+                    <span class="text-xs font-black leading-tight">Tarjeta</span>
+                    <span class="badge-active-indicator hidden text-[9px] bg-white text-teal-900 font-black px-1.5 py-0.2 rounded-full shadow-xs">✓ SELECCIONADO</span>
+                  </button>
+                  <button type="button" onclick="selectVisualPaymentMethod('DEPOSITO_CUENTA')" id="btn-pay-DEPOSITO_CUENTA" class="pay-method-btn p-2.5 rounded-xl border-2 text-center transition flex flex-col items-center justify-center gap-1 cursor-pointer bg-white text-slate-700 border-slate-300 hover:border-teal-400 font-bold">
+                    <span class="text-2xl">🏦</span>
+                    <span class="text-xs font-black leading-tight">Depósito</span>
+                    <span class="badge-active-indicator hidden text-[9px] bg-white text-teal-900 font-black px-1.5 py-0.2 rounded-full shadow-xs">✓ SELECCIONADO</span>
+                  </button>
+                  <button type="button" onclick="selectVisualPaymentMethod('CREDITO_FIADO')" id="btn-pay-CREDITO_FIADO" class="pay-method-btn p-2.5 rounded-xl border-2 text-center transition flex flex-col items-center justify-center gap-1 cursor-pointer bg-white text-slate-700 border-slate-300 hover:border-teal-400 font-bold">
+                    <span class="text-2xl">📒</span>
+                    <span class="text-xs font-black leading-tight">Crédito/Fiado</span>
+                    <span class="badge-active-indicator hidden text-[9px] bg-white text-teal-900 font-black px-1.5 py-0.2 rounded-full shadow-xs">✓ SELECCIONADO</span>
+                  </button>
+                </div>
+                
+                <select id="pos-payment-method" class="hidden">
+                  <option value="EFECTIVO" selected>💵 Efectivo RD$</option>
+                  <option value="TARJETA" id="pos-opt-payment-tarjeta">💳 Tarjeta</option>
+                  <option value="DEPOSITO_CUENTA">🏦 Depósito a Cuenta</option>
+                  <option value="CREDITO_FIADO">📒 Crédito / Fiado (Deudor)</option>
+                </select>
+
+                <div class="pt-1">
                   <div class="flex items-center justify-between">
                     <label class="block text-[11px] font-bold text-slate-600 uppercase">Seguro Médico (ARS)</label>
                     <span id="pos-ars-lock-hint" class="hidden text-[9px] font-extrabold text-rose-600">🔒 Bloqueado</span>
                   </div>
-                  <select id="pos-insurance-ars" class="w-full mt-1 px-2.5 py-2 rounded-lg border border-slate-300 text-xs font-bold bg-white">
+                  <select id="pos-insurance-ars" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold bg-white">
                     <option value="Sin Seguro">Sin Seguro</option>
                     <option value="ARS Humano">ARS Humano</option>
                     <option value="Senasa">ARS Senasa</option>
@@ -943,6 +988,14 @@
               </button>
               <button onclick="setInventoryFilterPill('STOCK_BAJO')" id="inv-pill-STOCK_BAJO" class="px-4 py-2 rounded-2xl text-xs font-bold transition bg-orange-50 text-orange-800 border border-orange-300 hover:bg-orange-100 cursor-pointer">
                 ⚠️ Stock bajo (<span id="cnt-inv-stock-bajo">0</span>)
+              </button>
+              <button
+                type="button"
+                onclick="setInventoryFilterPill('SIN_SALIDA')"
+                id="inv-pill-SIN_SALIDA"
+                class="px-4 py-2 rounded-2xl text-xs font-bold transition bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 cursor-pointer"
+              >
+                📉 Sin Salida ≤50 (<span id="cnt-inv-sin-salida">0</span>)
               </button>
             </div>
             <span id="inv-showing-counter" class="text-[11px] font-bold text-slate-500">Mostrando todo el inventario</span>
@@ -2346,9 +2399,9 @@
             </div>
           </div>
         </div>
-        <label class="flex items-center gap-2 p-3 rounded-xl bg-teal-50 border border-teal-200 font-bold text-teal-900 cursor-pointer">
-          <input id="nf-clonar" type="checkbox" checked class="rounded text-teal-600" />
-          <span>Inicializar inventario propio con el catálogo base de medicamentos</span>
+        <label class="flex items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-700 cursor-pointer">
+          <input id="nf-clonar" type="checkbox" class="rounded text-teal-600" />
+          <span>Iniciar con inventario limpio en blanco (0 productos de prueba)</span>
         </label>
         <button type="submit" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-teal-700 text-white font-extrabold text-sm shadow">
           ✅ Crear Farmacia e Iniciar Sesión

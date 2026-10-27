@@ -44,6 +44,26 @@
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
 
+  <!-- Banner de Instalacion de la App Movil en Celulares -->
+  <div id="pwa-install-banner" class="hidden bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-600 text-white px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between shadow-lg sticky top-0 z-50 text-xs font-bold">
+    <div class="flex items-center gap-2">
+      <span class="text-xl">📲</span>
+      <div>
+        <p class="font-black leading-tight text-white">Instalar App Farmacia Davalsi</p>
+        <p class="text-[11px] text-teal-100 font-normal">Accede rápido a medicamentos y pedidos desde tu celular</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" onclick="triggerPwaInstall()" class="px-3 py-1.5 rounded-lg bg-white text-teal-900 font-black text-xs shadow hover:bg-teal-50 transition cursor-pointer">
+        Instalar Gratis
+      </button>
+      <button type="button" onclick="dismissPwaBanner()" class="text-teal-200 hover:text-white px-1 text-sm font-bold">
+        ✕
+      </button>
+    </div>
+  </div>
+
+
   <!-- =====================================================================
        PANTALLA DE ACCESO POR CLAVE PARA PACIENTES (PATIENT LOGIN GATE)
        ===================================================================== -->
@@ -114,6 +134,13 @@
           </button>
         </form>
 
+        <!-- Enlace Directo al Sistema POS de la Farmacia -->
+        <div class="pt-3 border-t border-slate-200 text-center">
+          <a href="/sistema" class="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow flex items-center justify-center gap-2 transition">
+            <span>🏪</span> <span>¿Eres de la farmacia? <strong>Ir al Sistema POS de Cobro</strong> ➜</span>
+          </a>
+        </div>
+
         <!-- Acceso Rápido con Cuenta Demo -->
         <div class="pt-3 border-t border-slate-200">
           <p class="text-[11px] font-extrabold uppercase text-teal-700 mb-2">🔑 Paciente Demo (Clic para entrar directo):</p>
@@ -151,6 +178,10 @@
         </div>
       </div>
 
+      <!-- Acceso Rápido al Sistema POS -->
+      <a href="/sistema" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold shadow transition">
+        <span>🏪</span> <span>Sistema POS Mostrador</span>
+      </a>
       <!-- Selector de Módulo Activo -->
       
       <!-- Perfil de Paciente Autenticado -->
@@ -644,5 +675,35 @@
   <div id="toast-container" class="fixed top-16 right-4 z-50 space-y-2 pointer-events-none"></div>
 
   <script src="/app.js"></script>
+
+<script>
+let pwaDeferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  pwaDeferredPrompt = e;
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.classList.remove('hidden');
+});
+
+function triggerPwaInstall() {
+  if (pwaDeferredPrompt) {
+    pwaDeferredPrompt.prompt();
+    pwaDeferredPrompt.userChoice.then((choice) => {
+      if (choice.outcome === 'accepted') {
+        dismissPwaBanner();
+      }
+      pwaDeferredPrompt = null;
+    });
+  } else {
+    alert("📱 Para instalar en tu celular:\n\n• En Android (Chrome): Toca los 3 puntos (⋮) arriba a la derecha y selecciona 'Instalar aplicación' o 'Agregar a la pantalla principal'.\n\n• En iPhone (Safari): Toca el botón Compartir (cuadrado con flecha hacia arriba) y selecciona 'Agregar a pantalla de inicio'.");
+  }
+}
+
+function dismissPwaBanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.classList.add('hidden');
+}
+</script>
 </body>
+
 </html>

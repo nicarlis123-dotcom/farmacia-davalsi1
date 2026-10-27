@@ -183,18 +183,57 @@ async function loadPharmaciesForLogin() {
   const res = await fetch('/api/pharmacies');
   const data = await res.json();
   if (!data.ok) return;
-  sysState.pharmacies = data.pharmacies;
+  sysState.pharmacies = data.pharmacies || [];
 
   const sel = document.getElementById('login-pharmacy-select');
+  const demoList = document.getElementById('demo-credentials-list');
+
+  if (sysState.pharmacies.length === 0) {
+    if (sel) {
+      sel.innerHTML = '<option value="">(Sin farmacias registradas - Registra la tuya)</option>';
+    }
+    if (demoList) {
+      demoList.innerHTML = `
+        <div class="p-4 rounded-2xl bg-teal-950/70 border border-teal-500/40 text-center space-y-2">
+          <p class="font-extrabold text-teal-300 text-xs">✨ Sistema Totalmente Limpio</p>
+          <p class="text-[11px] text-slate-300 leading-tight">No hay farmacias de prueba ni medicamentos registrados.</p>
+          <button type="button" onclick="openCreatePharmacyModal()" class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-xs shadow-md transition cursor-pointer">
+            ➕ Registrar Mi Farmacia
+          </button>
+        </div>
+      `;
+    }
+    const formEl = document.querySelector('#auth-gate-screen form');
+    if (formEl && !document.getElementById('empty-sys-prompt')) {
+      const banner = document.createElement('div');
+      banner.id = 'empty-sys-prompt';
+      banner.className = 'p-4 rounded-2xl bg-teal-50 border-2 border-teal-500/50 text-center space-y-2 mb-3';
+      banner.innerHTML = `
+        <div class="text-2xl">🏥</div>
+        <p class="text-sm font-black text-teal-950">¡Bienvenido a FarmaSys!</p>
+        <p class="text-xs text-slate-600">El sistema está limpio y listo para ti. Registra tu farmacia oficial con su nombre comercial, dirección exacta y contraseña de acceso.</p>
+        <button type="button" onclick="openCreatePharmacyModal()" class="w-full py-3 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-lg transition cursor-pointer">
+          ➕ Registrar Mi Farmacia Ahora
+        </button>
+      `;
+      formEl.parentNode.insertBefore(banner, formEl);
+    }
+    setTimeout(() => { openCreatePharmacyModal(); }, 350);
+    return;
+  }
+
+  // Remove empty prompt if present
+  const existingPrompt = document.getElementById('empty-sys-prompt');
+  if (existingPrompt) existingPrompt.remove();
+
   if (sel) {
     sel.innerHTML = data.pharmacies
       .map(
-        (f) => `<option value="${f.id}">${f.nombre} — ${f.ciudad_sector}</option>`
+        (f) => `<option value="${f.id}">${f.nombre} • ${f.ciudad_sector}</option>`
       )
       .join('');
   }
 
-  const demoList = document.getElementById('demo-credentials-list');
   if (demoList) {
     demoList.innerHTML = data.pharmacies
       .map(
@@ -202,14 +241,14 @@ async function loadPharmaciesForLogin() {
         <div class="w-full p-2.5 rounded-xl bg-slate-800/90 border border-slate-700 hover:border-teal-500/50 transition flex items-center justify-between gap-2">
           <div class="cursor-pointer flex-1" onclick="fillDemoLogin(${f.id}, '${f.usuario_admin}', '${f.pista_clave_demo || 'davalsi123'}')">
             <p class="font-bold text-white text-xs">${f.nombre}</p>
-            <p class="text-[10px] text-slate-400">Admin: <span class="text-teal-300 font-bold">${f.usuario_admin}</span> • Clave: <span class="font-mono text-teal-300 font-bold">${f.pista_clave_demo || 'davalsi123'}</span></p>
+            <p class="text-[10px] text-slate-400">Admin: <span class="text-teal-300 font-bold">${f.usuario_admin}</span> • Clave: <span class="font-mono text-teal-300 font-bold">${f.pista_clave_demo || '••••••'}</span></p>
           </div>
           <button
             type="button"
             onclick="quickDirectLogin(${f.id}, '${f.usuario_admin}', '${f.pista_clave_demo || 'davalsi123'}')"
             class="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-[11px] shadow transition shrink-0"
           >
-            Entrar ⚡
+            Entrar ➔
           </button>
         </div>
       `
@@ -1879,7 +1918,7 @@ function switchInventorySubView(mode) {
 
 function setInventoryFilterPill(pill) {
   sysState.inventoryFilterPill = pill;
-  const pills = ['TODOS', 'MERCANCIA', 'MEDICAMENTOS', 'POR_VENCER', 'VENCIDOS', 'STOCK_BAJO'];
+  const pills = ['TODOS', 'MERCANCIA', 'MEDICAMENTOS', 'POR_VENCER', 'VENCIDOS', 'STOCK_BAJO', 'SIN_SALIDA'];
   pills.forEach((p) => {
     const el = document.getElementById(`inv-pill-${p}`);
     if (el) {
@@ -1898,6 +1937,8 @@ function setInventoryFilterPill(pill) {
             ? 'bg-rose-50 text-rose-800 border border-rose-300'
             : p === 'STOCK_BAJO'
             ? 'bg-orange-50 text-orange-800 border border-orange-300'
+            : p === 'SIN_SALIDA'
+            ? 'bg-amber-50 text-amber-900 border border-amber-400 font-extrabold'
             : 'bg-white text-slate-700 border border-slate-300';
         el.className = `px-4 py-2 rounded-2xl text-xs font-bold transition hover:opacity-90 cursor-pointer ${borderCls}`;
       }
@@ -1949,6 +1990,8 @@ function getFilteredInventoryProducts() {
     list = list.filter((p) => p.vencimiento.estado_vencimiento === 'VENCIDO');
   } else if (sysState.inventoryFilterPill === 'STOCK_BAJO') {
     list = list.filter((p) => p.inventario.alerta_stock_bajo);
+  } else if (sysState.inventoryFilterPill === 'SIN_SALIDA') {
+    list = list.filter((p) => p.rotacion && p.rotacion.alerta_poca_salida);
   }
 
   const sortSelect = document.getElementById('inv-sort-filter');
@@ -1987,6 +2030,7 @@ function renderInventoryTable() {
   ).length;
   const vencidosCnt = prods.filter((p) => p.vencimiento.estado_vencimiento === 'VENCIDO').length;
   const stockBajoCnt = prods.filter((p) => p.inventario.alerta_stock_bajo).length;
+  const sinSalidaCnt = prods.filter((p) => p.rotacion && p.rotacion.alerta_poca_salida).length;
 
   let globalUnits = 0;
   let globalBoxes = 0;
@@ -2040,6 +2084,8 @@ function renderInventoryTable() {
   if (elVenc) elVenc.textContent = vencidosCnt;
   const elBajo = document.getElementById('cnt-inv-stock-bajo');
   if (elBajo) elBajo.textContent = stockBajoCnt;
+  const elSinSalida = document.getElementById('cnt-inv-sin-salida');
+  if (elSinSalida) elSinSalida.textContent = sinSalidaCnt;
 
   const list = getFilteredInventoryProducts();
   const showingCounter = document.getElementById('inv-showing-counter');
@@ -6326,6 +6372,72 @@ async function submitImportWhatsAppOrder() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<span>🚀</span> <span>Registrar Pedido y Ver en Despacho</span>';
+  }
+}
+
+/* =========================================================================
+   FARMASYS POS - CONTROLADORES VISUALES DE SELECCIÓN (ALTO CONTRASTE)
+   ========================================================================= */
+
+function selectVisualPaymentMethod(method) {
+  const sel = document.getElementById('pos-payment-method');
+  if (sel) {
+    sel.value = method;
+    sel.dispatchEvent(new Event('change'));
+  }
+
+  // Actualizar botones visuales con resalte
+  const allBtns = document.querySelectorAll('.pay-method-btn');
+  allBtns.forEach((btn) => {
+    btn.classList.remove('active-pay');
+    btn.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+    const badge = btn.querySelector('.badge-active-indicator');
+    if (badge) badge.classList.add('hidden');
+  });
+
+  const activeBtn = document.getElementById(`btn-pay-${method}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active-pay');
+    activeBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+    const badge = activeBtn.querySelector('.badge-active-indicator');
+    if (badge) badge.classList.remove('hidden');
+  }
+
+  // Control de calculadora de efectivo
+  const cashContainer = document.getElementById('pos-cash-calc-container');
+  if (cashContainer) {
+    if (method === 'EFECTIVO') {
+      cashContainer.classList.remove('hidden');
+      setTimeout(() => document.getElementById('pos-cash-tendered')?.focus(), 100);
+    } else {
+      cashContainer.classList.add('hidden');
+    }
+  }
+
+  // Alerta si tarjeta está bloqueada
+  if (method === 'TARJETA' && sysState.authenticatedPharmacy && sysState.authenticatedPharmacy.pago_tarjeta_activo === false) {
+    showToast('🔒 El pago con tarjeta se encuentra temporalmente bloqueado en la configuración.', 'error');
+  }
+}
+
+function selectVisualScanPresentation(pres) {
+  const sel = document.getElementById('pos-scan-presentation');
+  if (sel) sel.value = pres;
+
+  const allPres = document.querySelectorAll('.pres-pill-btn');
+  allPres.forEach((btn) => {
+    btn.classList.remove('active-pres');
+    btn.classList.add('bg-white', 'text-slate-700');
+    const badge = btn.querySelector('.badge-pres-active');
+    if (badge) badge.classList.add('hidden');
+  });
+
+  const activeBtn = document.getElementById(`btn-pres-${pres}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active-pres');
+    activeBtn.classList.remove('bg-white', 'text-slate-700');
+    const badge = activeBtn.querySelector('.badge-pres-active');
+    if (badge) badge.classList.remove('hidden');
   }
 }
 
