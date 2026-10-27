@@ -989,6 +989,14 @@
               <button onclick="setInventoryFilterPill('STOCK_BAJO')" id="inv-pill-STOCK_BAJO" class="px-4 py-2 rounded-2xl text-xs font-bold transition bg-orange-50 text-orange-800 border border-orange-300 hover:bg-orange-100 cursor-pointer">
                 ⚠️ Stock bajo (<span id="cnt-inv-stock-bajo">0</span>)
               </button>
+              <button
+                type="button"
+                onclick="setInventoryFilterPill('SIN_SALIDA')"
+                id="inv-pill-SIN_SALIDA"
+                class="px-4 py-2 rounded-2xl text-xs font-bold transition bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 cursor-pointer"
+              >
+                📉 Sin Salida ≤50 (<span id="cnt-inv-sin-salida">0</span>)
+              </button>
             </div>
             <span id="inv-showing-counter" class="text-[11px] font-bold text-slate-500">Mostrando todo el inventario</span>
           </div>
@@ -2391,9 +2399,9 @@
             </div>
           </div>
         </div>
-        <label class="flex items-center gap-2 p-3 rounded-xl bg-teal-50 border border-teal-200 font-bold text-teal-900 cursor-pointer">
-          <input id="nf-clonar" type="checkbox" checked class="rounded text-teal-600" />
-          <span>Inicializar inventario propio con el catálogo base de medicamentos</span>
+        <label class="flex items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-700 cursor-pointer">
+          <input id="nf-clonar" type="checkbox" class="rounded text-teal-600" />
+          <span>Iniciar con inventario limpio en blanco (0 productos de prueba)</span>
         </label>
         <button type="submit" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-teal-700 text-white font-extrabold text-sm shadow">
           ✅ Crear Farmacia e Iniciar Sesión
